@@ -25,8 +25,8 @@ const audioCtx          = new AudioContext(); // consider OfflineAudioContext?
 const audioSampleRate   = audioCtx.sampleRate;
 
 const pitchr            = require("AudioPitchr");
-const CHROMA_HOP        = 1024*4;
-const chromagram        = pitchr.Chromagram(CHROMA_HOP,audioSampleRate);
+const frameHop          = 1024*4;
+const chromagram        = pitchr.Chromagram(frameHop,audioSampleRate);
 const chromachord       = pitchr.Chromachord;  
 
 const disallowSusChords = false;
