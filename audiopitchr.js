@@ -558,7 +558,7 @@ function detectChord (chromagramToUse, disallowSusChords){
     rootNote:   rootNote,
 		quality:    quality,
 		intervals:  intervals,
-    score:      100*chordScore,
+    score:      Math.max(0, Math.min(1.0, 500*chordScore)), // return 0.0-1.0 score, lower is better.
     snrDB:      cgramSNR
   };
 }

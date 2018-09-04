@@ -89,12 +89,12 @@ function runTest(){
   var chordScoreEl = document.getElementById("chordScore");
   // --
   var currentBestChord      = null;
-  var bestChordDBThresh     = 12.0;
-  var bestChordScoreThresh  = 0.2;
+  var bestChordDBThresh     = 10.0;
+  var bestChordScoreThresh  = 0.50; // note that lower is better here.
   var disallowSusChords     = true;
 
-  const Y_SCORE = 180;
-  const Y_SNR   = 280;
+  const Y_SCORE = 200;
+  const Y_SNR   = 300;
   const Y_ROOT  = 100;
   const Y_NOTES = 20;
 
@@ -144,27 +144,37 @@ function runTest(){
       var cgramMax = Math.max(0.0001, cgramSortedLowToHigh[11]);
       for(var i=0; i<12; i++){
         ctx.fillStyle = "rgba(0,0,0,"+(cgram[i]/cgramMax).toFixed(3)+")";
-        ctx.fillRect(frameIndex*xStep,h-Y_NOTES-3*i,xStep,3);
+        ctx.fillRect(frameIndex*xStep,h-Y_NOTES-5*i,xStep,5);
       }
       ctx.fillStyle = "rgba(64,64,64,1)";
-      ctx.fillRect(frameIndex*xStep,h-Y_SCORE-Math.min(100, 100*bestChord.score)+1,xStep,3);
+      ctx.fillRect(frameIndex*xStep,h-Y_SCORE-Math.min(50, 50*bestChord.score)-1,xStep,3);
       ctx.fillStyle = "rgba(128,128,128,0.5)";
-      if(frameIndex%5<3) ctx.fillRect(frameIndex*xStep,h-Y_SCORE-Math.min(100, 100*bestChordScoreThresh),xStep,1);
+      if(frameIndex%5<3) ctx.fillRect(frameIndex*xStep,h-Y_SCORE-Math.min(50, 50*bestChordScoreThresh),xStep,1);
       ctx.fillStyle = "rgba(64,64,64,1)";
-      ctx.fillRect(frameIndex*xStep,h-Y_SNR-4*bestChord.snrDB,xStep,3);
+      ctx.fillRect(frameIndex*xStep,h-Y_SNR-2*bestChord.snrDB-1,xStep,3);
       ctx.fillStyle = "rgba(128,128,128,0.5)";
-      if(frameIndex%5<3) ctx.fillRect(frameIndex*xStep,h-Y_SNR-4*bestChordDBThresh+1,xStep,1);
+      if(frameIndex%5<3) ctx.fillRect(frameIndex*xStep,h-Y_SNR-2*bestChordDBThresh,xStep,1);
       // --
-      if(!currentBestChord || bestChord.snrDB > bestChordDBThresh){
+      if(!currentBestChord || (bestChord.snrDB > bestChordDBThresh && bestChord.score < bestChordScoreThresh)){
         currentBestChord = bestChord;
+        ctx.fillStyle = "rgba(0,255,0,0.5)";
+      }else{
+        ctx.fillStyle = "rgba(128,128,128,0.5)";
       }
+      ctx.fillRect(frameIndex*xStep,h-Y_SCORE,xStep,5);
+      // --
       let chordOpacity  = Math.max(0, Math.min(1, (((bestChord.snrDB||0)*4)/100.0) )).toFixed(3);
       let chordColorHSV = Chromachord.getHSVColor(currentBestChord);
       let chordColorFillStyle = "hsl("+chordColorHSV[0]+","+chordColorHSV[1]+"%,"+chordColorHSV[2]+"%)";
       ctx.fillStyle = "rgba(255,128,128,1)";
-      ctx.fillRect(frameIndex*xStep,h-Y_NOTES+1-3*bestChord.rootNote,xStep,1);
+      ctx.fillRect(frameIndex*xStep,h-Y_NOTES-5*bestChord.rootNote+2,xStep,1);
       ctx.fillStyle = chordColorFillStyle;
-      ctx.fillRect(frameIndex*xStep,h-Y_ROOT-4*currentBestChord.rootNote,xStep,4);
+      ctx.fillRect(frameIndex*xStep,h-Y_ROOT-5*currentBestChord.rootNote-2,xStep,5);
+      // --
+      chordColorHSV = Chromachord.getHSVColor(bestChord);
+      chordColorFillStyle = "hsl("+chordColorHSV[0]+","+chordColorHSV[1]+"%,"+chordColorHSV[2]+"%)";
+      ctx.fillStyle = chordColorFillStyle;
+      ctx.fillRect(frameIndex*xStep,h-Y_ROOT-5*bestChord.rootNote,xStep,1)
       // --
       chordNameEl.innerHTML   = currentBestChord.snrDB>0?Chromachord.getTextDesc(currentBestChord):"--";
       chordScoreEl.innerHTML  = bestChord.snrDB.toFixed(2);
