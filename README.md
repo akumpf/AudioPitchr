@@ -57,6 +57,14 @@ scriptNode.onaudioprocess = function(audioProcessingEvent) {
 
 ```
 
+## Building
+
+The source should be sufficient for most Node projects, but to build the combined `audiopitchr.js` bundle file, use browserify:
+
+```
+browserify index.js -o audiopitchr.js
+```
+
 ## License
 
 AudioPitchr is released as open source under the GNU GPLv3 license.
