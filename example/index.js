@@ -88,20 +88,21 @@ function runTest(){
   var chordNameEl  = document.getElementById("chordName");
   var chordScoreEl = document.getElementById("chordScore");
   // --
-  var currentBestChord  = null;
-  var bestChordDBThresh = 12.0;
-  var disallowSusChords = true;
+  var currentBestChord      = null;
+  var bestChordDBThresh     = 12.0;
+  var bestChordScoreThresh  = 0.2;
+  var disallowSusChords     = true;
 
-  const Y_SCORE = 140;
-  const Y_SNR   = 215;
-  const Y_ROOT  = 80;
-  const Y_NOTES = 15;
+  const Y_SCORE = 180;
+  const Y_SNR   = 280;
+  const Y_ROOT  = 100;
+  const Y_NOTES = 20;
 
-  ctx.font="12px Helvetica Neue";
-  ctx.fillText("Best Chord Score",2, h-Y_SCORE  +15);
-  ctx.fillText("Best Chord SNR",  2, h-Y_SNR    +15);
-  ctx.fillText("Chord @ Root",    2, h-Y_ROOT   +15);
-  ctx.fillText("Notes",           2, h-Y_NOTES  +15);
+  ctx.font="14px Helvetica Neue";
+  ctx.fillText("Best Chord Score",4, h-Y_SCORE  +17);
+  ctx.fillText("Best Chord SNR",  4, h-Y_SNR    +17);
+  ctx.fillText("Chord @ Root",    4, h-Y_ROOT   +17);
+  ctx.fillText("Notes % 12",      4, h-Y_NOTES  +17);
 
   // Create a ScriptProcessorNode with a bufferSize of 4096 and a single input and output channel
   var scriptNode = audioCtx.createScriptProcessor(frameHop, 1, 1);
@@ -145,14 +146,16 @@ function runTest(){
         ctx.fillStyle = "rgba(0,0,0,"+(cgram[i]/cgramMax).toFixed(3)+")";
         ctx.fillRect(frameIndex*xStep,h-Y_NOTES-3*i,xStep,3);
       }
-      ctx.fillStyle = "rgba(0,0,0,0.5)";
-      ctx.fillRect(frameIndex*xStep,h-Y_SCORE-Math.min(100, 100*bestChord.score),xStep,1);
-      ctx.fillStyle = "rgba(0,128,128,1)";
+      ctx.fillStyle = "rgba(64,64,64,1)";
+      ctx.fillRect(frameIndex*xStep,h-Y_SCORE-Math.min(100, 100*bestChord.score)+1,xStep,3);
+      ctx.fillStyle = "rgba(128,128,128,0.5)";
+      if(frameIndex%5<3) ctx.fillRect(frameIndex*xStep,h-Y_SCORE-Math.min(100, 100*bestChordScoreThresh),xStep,1);
+      ctx.fillStyle = "rgba(64,64,64,1)";
       ctx.fillRect(frameIndex*xStep,h-Y_SNR-4*bestChord.snrDB,xStep,3);
       ctx.fillStyle = "rgba(128,128,128,0.5)";
-      ctx.fillRect(frameIndex*xStep,h-Y_SNR-4*bestChordDBThresh+1,xStep,1);
+      if(frameIndex%5<3) ctx.fillRect(frameIndex*xStep,h-Y_SNR-4*bestChordDBThresh+1,xStep,1);
       // --
-      if(!currentBestChord || bestChord.snrDB > 10.0){
+      if(!currentBestChord || bestChord.snrDB > bestChordDBThresh){
         currentBestChord = bestChord;
       }
       let chordOpacity  = Math.max(0, Math.min(1, (((bestChord.snrDB||0)*4)/100.0) )).toFixed(3);
