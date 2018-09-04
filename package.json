@@ -24,6 +24,8 @@
     "music"
   ],
   "dependencies": {
+    "fourier-transform": "*",
+    "window-function": "*"
   },
   "author": "Makefast Workshop",
   "license": "GPL-3.0"
