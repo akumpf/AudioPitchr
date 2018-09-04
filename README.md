@@ -16,7 +16,7 @@ npm install AudioPitchr
 Then, in javascript you can use it like this.
 
 
-```
+```js
 
 const audioCtx          = new AudioContext(); // consider OfflineAudioContext?
 const audioSampleRate   = audioCtx.sampleRate;
