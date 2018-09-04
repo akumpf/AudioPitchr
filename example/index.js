@@ -82,7 +82,7 @@ function runTest(){
   var frameHop = 1024*4;
   var approxMillisPerFrame = 1; //frameHop/buffer.sampleRate*1000 * 0.8;
   var chroma = Chromagram(frameHop,sampleRate);
-  var frameIndex = 0;
+  var frameIndex = 5;
   var xStep = 1;
   // --
   var chordNameEl  = document.getElementById("chordName");
@@ -98,11 +98,17 @@ function runTest(){
   const Y_ROOT  = 140;
   const Y_NOTES = 20;
 
-  ctx.font="14px Helvetica Neue";
-  ctx.fillText("Best Chord Score",4, h-Y_SCORE  +17);
-  ctx.fillText("Best Chord SNR",  4, h-Y_SNR    +17);
-  ctx.fillText("Chord @ Root",    4, h-Y_ROOT   +17);
-  ctx.fillText("Notes % 12",      4, h-Y_NOTES  +17);
+  let wipeClean = ()=>{
+    ctx.fillStyle = "#EEEEEE";
+    ctx.fillRect(0,0,w,h);
+    ctx.font="14px Helvetica Neue";
+    ctx.fillStyle = "rgba(0,0,0,1)";
+    ctx.fillText("Best Chord Score",4, h-Y_SCORE  +17);
+    ctx.fillText("Best Chord SNR",  4, h-Y_SNR    +17);
+    ctx.fillText("Chord @ Root",    4, h-Y_ROOT   +17);
+    ctx.fillText("Notes % 12",      4, h-Y_NOTES  +17);
+  }
+  wipeClean();
   // --
 
   // Create a ScriptProcessorNode with a bufferSize of 4096 and a single input and output channel
@@ -110,7 +116,6 @@ function runTest(){
   // Give the node a function to process audio events
   var buff = new Float32Array(4096);
   scriptNode.onaudioprocess = function(audioProcessingEvent) {
-    frameIndex++;
     // The input buffer is the song we loaded earlier
     var inputBuffer = audioProcessingEvent.inputBuffer;
     // The output buffer contains the samples that will be modified and played
@@ -129,9 +134,13 @@ function runTest(){
       }
     }
     // --
-
     chroma.processAudioFrame(buff);
     if(chroma.isReady()){
+      frameIndex++;
+      if(frameIndex >= w){
+        wipeClean();
+        frameIndex = 5;
+      }
       var cgram = chroma.getChromagram();
       plotChromagram(cgram);
       var bestChord = Chromachord.detectChord(cgram,disallowSusChords);
