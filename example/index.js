@@ -91,11 +91,11 @@ function runTest(){
   var currentBestChord      = null;
   var bestChordDBThresh     = 10.0;
   var bestChordScoreThresh  = 0.50; // note that lower is better here.
-  var disallowSusChords     = true;
+  var disallowSusChords     = false;
 
-  const Y_SCORE = 200;
-  const Y_SNR   = 300;
-  const Y_ROOT  = 100;
+  const Y_SNR   = 380;
+  const Y_SCORE = 260;
+  const Y_ROOT  = 140;
   const Y_NOTES = 20;
 
   ctx.font="14px Helvetica Neue";
@@ -103,6 +103,7 @@ function runTest(){
   ctx.fillText("Best Chord SNR",  4, h-Y_SNR    +17);
   ctx.fillText("Chord @ Root",    4, h-Y_ROOT   +17);
   ctx.fillText("Notes % 12",      4, h-Y_NOTES  +17);
+  // --
 
   // Create a ScriptProcessorNode with a bufferSize of 4096 and a single input and output channel
   var scriptNode = audioCtx.createScriptProcessor(frameHop, 1, 1);
@@ -177,7 +178,7 @@ function runTest(){
       ctx.fillRect(frameIndex*xStep,h-Y_ROOT-5*bestChord.rootNote,xStep,1)
       // --
       chordNameEl.innerHTML   = currentBestChord.snrDB>0?Chromachord.getTextDesc(currentBestChord):"--";
-      chordScoreEl.innerHTML  = bestChord.snrDB.toFixed(2);
+      chordScoreEl.innerHTML  = "SNR: "+bestChord.snrDB.toFixed(2);
     }
   }
   // --

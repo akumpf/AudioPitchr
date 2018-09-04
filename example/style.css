@@ -20,3 +20,32 @@ body {
   text-align: center;
   cursor: pointer;
 }
+#chordName {
+  position: absolute;
+  left: 5px;
+  top: 520px;
+  font-weight: 600;
+}
+#chordScore {
+  position: absolute;
+  left: 5px;
+  top: 540px;
+  font-size: 10px;
+}
+#notenames {
+  position: absolute;
+  left: 0;
+  top: 645px;
+}
+.notename {
+  position: relative;
+  display: inline-block;
+  width: 85.5px;
+  font-weight: 600;
+  color: #999;
+  text-align: center;
+  pointer-events: none;
+}
+audio {
+  margin-top: 50px;
+}
