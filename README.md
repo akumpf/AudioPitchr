@@ -26,6 +26,8 @@ const CHROMA_HOP        = 1024*4;
 const chromagram        = pitchr.Chromagram(CHROMA_HOP,audioSampleRate);
 const chromachord       = pitchr.Chromachord;  
 
+const disallowSusChords = false;
+
 let buff        = new Float32Array(4096);
 let scriptNode  = audioCtx.createScriptProcessor(frameHop, 1, 1);
 scriptNode.onaudioprocess = function(audioProcessingEvent) {
