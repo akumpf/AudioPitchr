@@ -4,6 +4,7 @@
 
 AudioPitchr is a Web Audio based analysis toolset for determining the musical structure of any arbitrary audio source in realtime.
 
+![AudioPitchr example output with chords, root notes, intervals, and signal to noise db.](https://raw.githubusercontent.com/akumpf/audiopitchr/master/img/audiopitchr.png)
 
 ## Usage
 
