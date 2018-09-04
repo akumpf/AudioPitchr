@@ -1,6 +1,6 @@
 # AudioPitchr
 
-Example: https://akumpf.github.io/AudioPitchr/example/
+Example: [https://akumpf.github.io/AudioPitchr/example/](https://akumpf.github.io/AudioPitchr/example/)
 
 ** EXPERIMENTAL ** This code is volatile and prone to large changes.
 

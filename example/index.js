@@ -9,9 +9,10 @@ const Chromachord = audiopitchr.Chromachord; // input a chromagram --> get most 
 // --
 window.dataOut = [];
 // --
-document.addEventListener("DOMContentLoaded", function(event) {
+document.getElementById("startButton").onclick = ()=>{
+  document.getElementById("startButton").style.display = "none";
   runTest();
-});
+}
 // --
 function runTest(){
   var frequency   = 440;
@@ -162,4 +163,5 @@ function runTest(){
   var source = audioCtx.createMediaElementSource(audio);
   source.connect(scriptNode);
   scriptNode.connect(audioCtx.destination);
+  audio.play();
 }

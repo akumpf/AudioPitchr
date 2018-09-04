@@ -6,3 +6,17 @@ body {
   padding: 0;
   margin: 0;
 }
+#startButton {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  line-height: 200px;
+  font-size: 36px;
+  font-weight: 600;
+  color: #FFF;
+  background: rgba(0,0,0,0.8);
+  text-align: center;
+  cursor: pointer;
+}
