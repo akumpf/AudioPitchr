@@ -1,7 +1,10 @@
 "use strict"
 
-//var audioFilename = "./audio/Kevin_MacLeod_Slow_Burn.mp3";  // http://freemusicarchive.org/music/Kevin_MacLeod/Blues_Sampler/Slow_Burn
-var audioFilename = "./audio/Jahzzar_Take_Me_Higher.mp3"; // http://freemusicarchive.org/music/Jahzzar/Tumbling_Dishes_Like_Old-Mans_Wishes/Take_Me_Higher_1626
+var audioFilenames = [
+  "./audio/Kevin_MacLeod_Slow_Burn.mp3",  // http://freemusicarchive.org/music/Kevin_MacLeod/Blues_Sampler/Slow_Burn
+  "./audio/Jahzzar_Take_Me_Higher.mp3",   // http://freemusicarchive.org/music/Jahzzar/Tumbling_Dishes_Like_Old-Mans_Wishes/Take_Me_Higher_1626
+]
+var audioFilename = audioFilenames[Math.floor(Math.random()*audioFilenames.length)];
 
 // --
 const Chromagram  = audiopitchr.Chromagram; // input samples per frame, audio sampling rate --> get notes present
@@ -89,11 +92,16 @@ function runTest(){
   var bestChordDBThresh = 12.0;
   var disallowSusChords = true;
 
+  const Y_SCORE = 140;
+  const Y_SNR   = 215;
+  const Y_ROOT  = 80;
+  const Y_NOTES = 15;
+
   ctx.font="12px Helvetica Neue";
-  ctx.fillText("Best Chord Score",2, h-86  +1);
-  ctx.fillText("Best Chord SNR",  2, h-186 +1);
-  ctx.fillText("Chord @ Root",    2, h-40  +1);
-  ctx.fillText("Notes",           2, h-3   +1);
+  ctx.fillText("Best Chord Score",2, h-Y_SCORE  +15);
+  ctx.fillText("Best Chord SNR",  2, h-Y_SNR    +15);
+  ctx.fillText("Chord @ Root",    2, h-Y_ROOT   +15);
+  ctx.fillText("Notes",           2, h-Y_NOTES  +15);
 
   // Create a ScriptProcessorNode with a bufferSize of 4096 and a single input and output channel
   var scriptNode = audioCtx.createScriptProcessor(frameHop, 1, 1);
@@ -135,14 +143,14 @@ function runTest(){
       var cgramMax = Math.max(0.0001, cgramSortedLowToHigh[11]);
       for(var i=0; i<12; i++){
         ctx.fillStyle = "rgba(0,0,0,"+(cgram[i]/cgramMax).toFixed(3)+")";
-        ctx.fillRect(frameIndex*xStep,h-3-3*i,xStep,3);
+        ctx.fillRect(frameIndex*xStep,h-Y_NOTES-3*i,xStep,3);
       }
       ctx.fillStyle = "rgba(0,0,0,0.5)";
-      ctx.fillRect(frameIndex*xStep,h-86-Math.min(100, 100*bestChord.score),xStep,1);
+      ctx.fillRect(frameIndex*xStep,h-Y_SCORE-Math.min(100, 100*bestChord.score),xStep,1);
       ctx.fillStyle = "rgba(0,128,128,1)";
-      ctx.fillRect(frameIndex*xStep,h-186-5*bestChord.snrDB,xStep,3);
+      ctx.fillRect(frameIndex*xStep,h-Y_SNR-4*bestChord.snrDB,xStep,3);
       ctx.fillStyle = "rgba(128,128,128,0.5)";
-      ctx.fillRect(frameIndex*xStep,h-186-5*bestChordDBThresh+1,xStep,1);
+      ctx.fillRect(frameIndex*xStep,h-Y_SNR-4*bestChordDBThresh+1,xStep,1);
       // --
       if(!currentBestChord || bestChord.snrDB > 10.0){
         currentBestChord = bestChord;
@@ -151,9 +159,9 @@ function runTest(){
       let chordColorHSV = Chromachord.getHSVColor(currentBestChord);
       let chordColorFillStyle = "hsl("+chordColorHSV[0]+","+chordColorHSV[1]+"%,"+chordColorHSV[2]+"%)";
       ctx.fillStyle = "rgba(255,128,128,1)";
-      ctx.fillRect(frameIndex*xStep,h-2-3*bestChord.rootNote,xStep,1);
+      ctx.fillRect(frameIndex*xStep,h-Y_NOTES+1-3*bestChord.rootNote,xStep,1);
       ctx.fillStyle = chordColorFillStyle;
-      ctx.fillRect(frameIndex*xStep,h-40-4*currentBestChord.rootNote,xStep,4);
+      ctx.fillRect(frameIndex*xStep,h-Y_ROOT-4*currentBestChord.rootNote,xStep,4);
       // --
       chordNameEl.innerHTML   = currentBestChord.snrDB>0?Chromachord.getTextDesc(currentBestChord):"--";
       chordScoreEl.innerHTML  = bestChord.snrDB.toFixed(2);
