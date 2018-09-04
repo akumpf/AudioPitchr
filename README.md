@@ -18,11 +18,37 @@ Then, in javascript you can use it like this.
 
 ```
 
+const audioCtx          = new AudioContext(); // consider OfflineAudioContext?
+const audioSampleRate   = audioCtx.sampleRate;
+
 const pitchr            = require("AudioPitchr");
 const CHROMA_HOP        = 1024*4;
-const CHROMA_SAMPLERATE = 44100;  // can be derived from the active AudioContext
-const chromagram        = pitchr.Chromagram(CHROMA_HOP,CHROMA_SAMPLERATE);
+const chromagram        = pitchr.Chromagram(CHROMA_HOP,audioSampleRate);
 const chromachord       = pitchr.Chromachord;  
+
+let buff        = new Float32Array(4096);
+let scriptNode  = audioCtx.createScriptProcessor(frameHop, 1, 1);
+scriptNode.onaudioprocess = function(audioProcessingEvent) {
+  // Mono-ize the input data (alternative, could apply to left and right separately)...
+  let inputBuffer = audioProcessingEvent.inputBuffer;
+  let outputBuffer = audioProcessingEvent.outputBuffer;
+  buff.fill(0,0,buff.length);
+  let buffDiv = outputBuffer.numberOfChannels;
+  for (let channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
+    let inputData = inputBuffer.getChannelData(channel);
+    let outputData = outputBuffer.getChannelData(channel);
+    for (let sample = 0; sample < inputBuffer.length; sample++) {
+      outputData[sample] = inputData[sample];
+      buff[sample] += inputData[sample]/buffDiv;
+    }
+  }
+  // --
+  chroma.processAudioFrame(buff);
+  if(chroma.isReady()){
+    let cgram     = chroma.getChromagram();
+    let bestChord = chromachord.detectChord(cgram,disallowSusChords);
+    console.log(chromachord.getTextDesc(bestChord));
+  }
 
 ```
 
