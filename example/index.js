@@ -84,7 +84,7 @@ function runTest(useMic){
   var chordScoreEl = document.getElementById("chordScore");
   // --
   var currentBestChord      = null;
-  var bestChordDBThresh     =  8.0;
+  var bestChordDBThresh     =  5.0;
   var bestChordScoreThresh  = 0.70; // note that lower is better here.
   var disallowSusChords     = false;
 
@@ -126,9 +126,10 @@ function runTest(useMic){
       for(var i=0; i<12; i++) cgramSortedLowToHigh.push(cgram[i]);
       cgramSortedLowToHigh.sort();
       // --
-      var cgramMax = Math.max(0.0001, cgramSortedLowToHigh[11]);
+      var cgramMax = Math.max(0.001, cgramSortedLowToHigh[11]);
       for(var i=0; i<12; i++){
-        ctx.fillStyle = "rgba(0,0,0,"+(cgram[i]/cgramMax).toFixed(3)+")";
+        let cgramAlpha = (cgram[i]/cgramMax);
+        ctx.fillStyle = "rgba(0,0,0,"+(cgramAlpha*cgramAlpha).toFixed(3)+")";
         ctx.fillRect(frameIndex*xStep,h-Y_NOTES-5*i,xStep,5);
       }
       ctx.fillStyle = "rgba(64,64,64,1)";
