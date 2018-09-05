@@ -1,8 +1,9 @@
 "use strict"
 
 var audioFilenames = [
-  "./audio/Kevin_MacLeod_Slow_Burn.mp3",  // http://freemusicarchive.org/music/Kevin_MacLeod/Blues_Sampler/Slow_Burn
-  "./audio/Jahzzar_Take_Me_Higher.mp3",   // http://freemusicarchive.org/music/Jahzzar/Tumbling_Dishes_Like_Old-Mans_Wishes/Take_Me_Higher_1626
+  "./audio/Kevin_MacLeod_Slow_Burn.mp3",      // http://freemusicarchive.org/music/Kevin_MacLeod/Blues_Sampler/Slow_Burn
+  "./audio/Jahzzar_Take_Me_Higher.mp3",       // http://freemusicarchive.org/music/Jahzzar/Tumbling_Dishes_Like_Old-Mans_Wishes/Take_Me_Higher_1626
+  "./audio/Blind_Blake-Diddie_Wa_Diddie.mp3", // https://publicdomain4u.com/blind-blake-diddie-wa-diddie
 ]
 var audioFilename = audioFilenames[Math.floor(Math.random()*audioFilenames.length)];
 
@@ -12,12 +13,16 @@ const Chromachord = audiopitchr.Chromachord; // input a chromagram --> get most 
 // --
 window.dataOut = [];
 // --
-document.getElementById("startButton").onclick = ()=>{
-  document.getElementById("startButton").style.display = "none";
-  runTest();
+document.getElementById("startButtonSong").onclick = ()=>{
+  document.getElementById("startButtons").style.display = "none";
+  runTest(false);
+}
+document.getElementById("startButtonMic").onclick = ()=>{
+  document.getElementById("startButtons").style.display = "none";
+  runTest(true);
 }
 // --
-function runTest(){
+function runTest(useMic){
   var size        = 2048*4;
   var sampleRate  = 44100;
   // --
@@ -64,14 +69,7 @@ function runTest(){
     ctx2.fill();
   }
 
-  // Create an <audio> element dynamically.
-  var audio = new Audio(audioFilename);
-  audio.controls = true;
-  audio.autoplay = false;
-  audio.loop     = true;
-  audio.muted    = false;
-  audio.crossorigin = "anonymous";
-  document.body.appendChild(audio);
+
   // --
   var audioCtx = new AudioContext(); // consider OfflineAudioContext?
   var sampleRate = audioCtx.sampleRate;
@@ -87,7 +85,7 @@ function runTest(){
   // --
   var currentBestChord      = null;
   var bestChordDBThresh     = 10.0;
-  var bestChordScoreThresh  = 0.50; // note that lower is better here.
+  var bestChordScoreThresh  = 0.70; // note that lower is better here.
   var disallowSusChords     = false;
 
   const Y_SNR   = 380;
@@ -168,13 +166,36 @@ function runTest(){
     }
   }
   // --
-  var source = audioCtx.createMediaElementSource(audio);
-  source.connect(scriptNode);
-  scriptNode.connect(audioCtx.destination); // need to do this in order for scriptNode to process.
+  function gotStream(stream) {
+    var source = useMic?audioCtx.createMediaStreamSource(stream):audioCtx.createMediaElementSource(stream);
+    // --
+    source.connect(scriptNode);
+    scriptNode.connect(audioCtx.destination); // need to do this in order for scriptNode to process.
+    // --
+    if(!useMic){
+      var delayNode = audioCtx.createDelay(2*8192/audioCtx.sampleRate);
+      delayNode.delayTime.value = 2*8192/audioCtx.sampleRate;
+      source.connect(delayNode);
+      delayNode.connect(audioCtx.destination);
+      stream.play();
+    }
+  }
   // --
-  var delayNode = audioCtx.createDelay(2*8192/audioCtx.sampleRate);
-  delayNode.delayTime.value = 2*8192/audioCtx.sampleRate;
-  source.connect(delayNode);
-  delayNode.connect(audioCtx.destination);
-  audio.play();
+  if(useMic){
+    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+    navigator.getUserMedia({audio:true}, gotStream, (err)=>{
+      console.warn(err);
+    });
+  }else{
+    // Create an <audio> element dynamically.
+    var audio = new Audio(audioFilename);
+    audio.controls = true;
+    audio.autoplay = false;
+    audio.loop     = true;
+    audio.muted    = false;
+    audio.crossorigin = "anonymous";
+    document.body.appendChild(audio);
+    gotStream(audio);
+  }
+
 }
