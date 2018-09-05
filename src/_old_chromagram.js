@@ -6,17 +6,15 @@
 const FT          = require('fourier-transform');
 const windowfuncs = require('window-function');
 // --
-var FFT_MUL_X     = 1; // x1 = 0.75sec, x2 = 1.5sec, etc.
-var REF_FREQ_MUL  = 2;
 
 var exportsAfterInit = {};
 // --
-var referenceFrequency  = 130.81278265*REF_FREQ_MUL;
+var referenceFrequency  = 130.81278265;
 var inputAudioFrameSize = 8192; // Note we don't actually have to jump that far each time (i.e. calls/samples can can overlap)
 var numHarmonics        = 2;
 var numOctaves          = 2;
 var numBinsToSearch     = 2;
-var fftSize             = 8192*FFT_MUL_X;
+var fftSize             = 8192;
 var downSampledAudioFrameSize   = inputAudioFrameSize/4;
 var downsampledInputAudioFrame  = new Float32Array(downSampledAudioFrameSize);
 var filteredFrame               = new Float32Array(inputAudioFrameSize);
@@ -28,6 +26,7 @@ var fftIn             = new Float32Array(fftSize);
 var fftInWindowed     = new Float32Array(fftSize);
 var magnitudeSpectrum = new Float32Array(fftSize/2);
 var fftInSamplesSoFar = 0;
+var samplingFrequency = 44100;  // overwritten on init.
 // --
 for(var i=0; i<fftSize; i++) windowFunction[i] = windowfuncs.blackmanNuttall(i, fftSize);
 // --
@@ -148,9 +147,13 @@ function downSampleFrameX4(inputAudioFrame){
         downsampledInputAudioFrame[i] = filteredFrame[i * 4];
     }
 }
+function getProcessingLatencySec(){
+  return (4*fftSize/samplingFrequency)/2; // we downsample by a factor of 4 (x4 multiplier), and it takes 1/2 the window before a note is most dominant (div 2).
+}
 // --
-exportsAfterInit.processAudioFrame  = processAudioFrame;
-exportsAfterInit.getChromagram      = getChromagram;
-exportsAfterInit.isReady            = isReady;
+exportsAfterInit.processAudioFrame        = processAudioFrame;
+exportsAfterInit.getChromagram            = getChromagram;
+exportsAfterInit.isReady                  = isReady;
+exportsAfterInit.getProcessingLatencySec  = getProcessingLatencySec;
 // --
 module.exports = ChromagramInit;

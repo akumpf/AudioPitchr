@@ -6,15 +6,17 @@
 const FT          = require('fourier-transform');
 const windowfuncs = require('window-function');
 // --
+var FFT_MUL_X     = 1; // x1 = 0.75sec, x2 = 1.5sec, etc.
+var REF_FREQ_MUL  = 2;
 
 var exportsAfterInit = {};
 // --
-var referenceFrequency  = 130.81278265;
+var referenceFrequency  = 130.81278265*REF_FREQ_MUL;
 var inputAudioFrameSize = 8192; // Note we don't actually have to jump that far each time (i.e. calls/samples can can overlap)
 var numHarmonics        = 2;
 var numOctaves          = 2;
-var numBinsToSearch     = 2;
-var fftSize             = 8192;
+var numBinsToSearch     = 1*FFT_MUL_X*REF_FREQ_MUL; // Hz/bin = samplingFrequency/fftSize (at 44.1 & 8192 -> 5.4Hz/bin; +/- 15 Hz for REF=2, Ideally we look at +/-1.5 bins; 2 is okay.)
+var fftSize             = 8192*FFT_MUL_X;
 var downSampledAudioFrameSize   = inputAudioFrameSize/4;
 var downsampledInputAudioFrame  = new Float32Array(downSampledAudioFrameSize);
 var filteredFrame               = new Float32Array(inputAudioFrameSize);
@@ -26,6 +28,7 @@ var fftIn             = new Float32Array(fftSize);
 var fftInWindowed     = new Float32Array(fftSize);
 var magnitudeSpectrum = new Float32Array(fftSize/2);
 var fftInSamplesSoFar = 0;
+var samplingFrequency = 44100;  // overwritten on init.
 // --
 for(var i=0; i<fftSize; i++) windowFunction[i] = windowfuncs.blackmanNuttall(i, fftSize);
 // --
@@ -102,11 +105,13 @@ function calculateChromagram(){
     for (var octave = 1; octave <= numOctaves; octave++){
       var noteSum = 0.0;
       for (var harmonic = 1; harmonic <= numHarmonics; harmonic++){
-        var centerBin = Math.round ((noteFrequencies[n] * octave * harmonic) / divisorRatio);
-        var minBin = centerBin - (numBinsToSearch * harmonic);
-        var maxBin = centerBin + (numBinsToSearch * harmonic);
+        var freqMul = Math.pow(2, (octave-1)+(harmonic-1));
+        var binMul  = Math.floor(freqMul);
+        var centerBin = Math.round ((noteFrequencies[n]*freqMul) / divisorRatio);
+        var minBin = centerBin - (numBinsToSearch * binMul);
+        var maxBin = centerBin + (numBinsToSearch * binMul);
         var maxVal = 0.0;
-        for (var k = minBin; k < maxBin; k++){
+        for (var k = minBin; k <= maxBin; k++){
           if (magnitudeSpectrum[k] > maxVal) maxVal = magnitudeSpectrum[k];
         }
         noteSum += maxVal / harmonic;
@@ -146,9 +151,19 @@ function downSampleFrameX4(inputAudioFrame){
         downsampledInputAudioFrame[i] = filteredFrame[i * 4];
     }
 }
+function getProcessingLatencySec(){
+  return (4*fftSize/samplingFrequency)/2; // we downsample by a factor of 4 (x4 multiplier), and it takes 1/2 the window before a note is most dominant (div 2).
+}
+function getFreqRange(){
+  return {
+    low:  referenceFrequency - numBinsToSearch*samplingFrequency/fftSize,
+    high: Math.pow(2,numOctaves)*referenceFrequency - numBinsToSearch*samplingFrequency/fftSize,
+  }
+}
 // --
-exportsAfterInit.processAudioFrame  = processAudioFrame;
-exportsAfterInit.getChromagram      = getChromagram;
-exportsAfterInit.isReady            = isReady;
+exportsAfterInit.processAudioFrame        = processAudioFrame;
+exportsAfterInit.getChromagram            = getChromagram;
+exportsAfterInit.isReady                  = isReady;
+exportsAfterInit.getProcessingLatencySec  = getProcessingLatencySec;
 // --
 module.exports = ChromagramInit;

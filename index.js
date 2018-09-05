@@ -1,6 +1,6 @@
 "use strict";
 
-const Chromagram  = require('./src/chromagram_mul.js');
+const Chromagram  = require('./src/chromagram.js');
 const Chromachord = require('./src/chromachord.js');
 
 module.exports = {

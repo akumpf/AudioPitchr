@@ -77,6 +77,7 @@ function runTest(useMic){
   // --
   var frameSize = 1024*2; // this is how often we process the data. Data is shifted in and processed each time.
   var chroma = Chromagram(frameSize,sampleRate);
+  var processingDelaySec = chroma.getProcessingLatencySec();
   var frameIndex = 5;
   var xStep = 1;
   // --
@@ -170,12 +171,17 @@ function runTest(useMic){
   function gotStream(stream) {
     var source = useMic?audioCtx.createMediaStreamSource(stream):audioCtx.createMediaElementSource(stream);
     // --
+    // var biquadFilter = audioCtx.createBiquadFilter();
+    // biquadFilter.type = "lowshelf";
+    // biquadFilter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+    // biquadFilter.gain.setValueAtTime(25, audioCtx.currentTime);
+
     source.connect(scriptNode);
     scriptNode.connect(audioCtx.destination); // need to do this in order for scriptNode to process.
     // --
     if(!useMic){
-      var delayNode = audioCtx.createDelay(2*8192/audioCtx.sampleRate);
-      delayNode.delayTime.value = 2*8192/audioCtx.sampleRate;
+      var delayNode = audioCtx.createDelay(processingDelaySec);
+      delayNode.delayTime.value = processingDelaySec;
       source.connect(delayNode);
       delayNode.connect(audioCtx.destination);
       stream.play();
