@@ -18,14 +18,13 @@ document.getElementById("startButton").onclick = ()=>{
 }
 // --
 function runTest(){
-  var frequency   = 440;
   var size        = 2048*4;
   var sampleRate  = 44100;
   // --
   var ctx = document.getElementById("canvas1").getContext("2d");
   var h = 512;
   var w = 1024;
-  var xMul = w/size*2;
+  var xMul = 1;
   // --
   var ctx2 = document.getElementById("canvas2").getContext("2d");
   var h2 = 128;
@@ -66,8 +65,7 @@ function runTest(){
   }
 
   // Create an <audio> element dynamically.
-  var audio = new Audio();
-  audio.src = audioFilename;
+  var audio = new Audio(audioFilename);
   audio.controls = true;
   audio.autoplay = false;
   audio.loop     = true;
@@ -79,9 +77,8 @@ function runTest(){
   var sampleRate = audioCtx.sampleRate;
   console.log("audioCtx.sampleRate: ",sampleRate);
   // --
-  var frameHop = 1024*4;
-  var approxMillisPerFrame = 1; //frameHop/buffer.sampleRate*1000 * 0.8;
-  var chroma = Chromagram(frameHop,sampleRate);
+  var frameSize = 1024*2; // this is how often we process the data. Data is shifted in and processed each time.
+  var chroma = Chromagram(frameSize,sampleRate);
   var frameIndex = 5;
   var xStep = 1;
   // --
@@ -112,29 +109,9 @@ function runTest(){
   // --
 
   // Create a ScriptProcessorNode with a bufferSize of 4096 and a single input and output channel
-  var scriptNode = audioCtx.createScriptProcessor(frameHop, 1, 1);
-  // Give the node a function to process audio events
-  var buff = new Float32Array(4096);
+  var scriptNode = audioCtx.createScriptProcessor(frameSize, 1, 1);
   scriptNode.onaudioprocess = function(audioProcessingEvent) {
-    // The input buffer is the song we loaded earlier
-    var inputBuffer = audioProcessingEvent.inputBuffer;
-    // The output buffer contains the samples that will be modified and played
-    var outputBuffer = audioProcessingEvent.outputBuffer;
-    // Loop through the output channels (in this case there is only one)
-    buff.fill(0,0,buff.length);
-    var buffDiv = outputBuffer.numberOfChannels;
-    for (var channel = 0; channel < outputBuffer.numberOfChannels; channel++) {
-      var inputData = inputBuffer.getChannelData(channel);
-      var outputData = outputBuffer.getChannelData(channel);
-      // Loop through the 4096 samples
-      for (var sample = 0; sample < inputBuffer.length; sample++) {
-        // make output equal to the same as the input
-        outputData[sample] = inputData[sample];
-        buff[sample] += inputData[sample]/buffDiv;
-      }
-    }
-    // --
-    chroma.processAudioFrame(buff);
+    chroma.processAudioFrame(audioProcessingEvent.inputBuffer.getChannelData(0));
     if(chroma.isReady()){
       frameIndex++;
       if(frameIndex >= w){
@@ -193,6 +170,11 @@ function runTest(){
   // --
   var source = audioCtx.createMediaElementSource(audio);
   source.connect(scriptNode);
-  scriptNode.connect(audioCtx.destination);
+  scriptNode.connect(audioCtx.destination); // need to do this in order for scriptNode to process.
+  // --
+  var delayNode = audioCtx.createDelay(2*8192/audioCtx.sampleRate);
+  delayNode.delayTime.value = 2*8192/audioCtx.sampleRate;
+  source.connect(delayNode);
+  delayNode.connect(audioCtx.destination);
   audio.play();
 }
