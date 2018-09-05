@@ -520,7 +520,8 @@ var ChordQuality = {
   "Suspended":3,
   "Dominant":4,
   "Dimished5th":5,
-  "Augmented5th":6
+  "Augmented5th":6,
+  " ":7, // No chord, just a root note.
 };
 var ChordQualityLookup = {};
 Object.keys(ChordQuality).forEach(function(key) {
@@ -532,9 +533,9 @@ module.exports.ChordQuality = ChordQuality;
 
 var bias = 1.06;
 var chromagram = new Float32Array(12);
-var chordProfiles = new Array(108);
-for(var i=0; i<108; i++) chordProfiles[i] = new Array(12);
-var chord = new Array(108);
+var chordProfiles = new Array(120);
+for(var i=0; i<120; i++) chordProfiles[i] = new Array(12);
+var chord = new Array(120);
 // --
 var rootNote    = 0;
 var quality     = ChordQuality.Unknown;
@@ -601,8 +602,10 @@ function classifyChromagram(disallowSusChords){
 	for (j = 84; j < 96; j++)  chord[j] = calculateChordScore (chromagram, chordProfiles[j], bias, 4);
 	// dominant 7th chords
 	for (j = 96; j < 108; j++) chord[j] = calculateChordScore (chromagram, chordProfiles[j], bias, 4);
+  // root only (no chord)
+	for (j = 108; j < 120; j++) chord[j] = calculateChordScore (chromagram, chordProfiles[j], 1.2, 1);
   // --
-	chordindex = minimumIndex (chord, 108);
+	chordindex = minimumIndex (chord, 120);
   chordScore = chord[chordindex];
   // --
 	// major
@@ -658,6 +661,12 @@ function classifyChromagram(disallowSusChords){
 		rootNote = chordindex-96;
 		quality = ChordQuality.Dominant;
 		intervals = 7;
+	}
+  // root note (no chord)
+	if ((chordindex >= 108) && (chordindex < 120)){
+		rootNote = chordindex-108;
+		quality = ChordQuality[" "];
+		intervals = 0;
 	}
 
 }
@@ -738,7 +747,7 @@ function makeChordProfiles(){
 	var v2 = 1;
 	var v3 = 1;
 	// set profiles matrix to all zeros
-	for (j = 0; j < 108; j++){
+	for (j = 0; j < 120; j++){
 		for (t = 0;t < 12;t++){
 			chordProfiles[j][t] = 0;
 		}
@@ -839,6 +848,12 @@ function makeChordProfiles(){
 		chordProfiles[j][third] = v2;
 		chordProfiles[j][fifth] = v3;
 		chordProfiles[j][seventh] = v3;
+		j++;
+	}
+  // root notes only (no chord)
+	for (i = 0; i < 12; i++){
+		root = i % 12;
+		chordProfiles[j][root] = v1;
 		j++;
 	}
 }

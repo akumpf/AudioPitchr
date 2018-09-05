@@ -84,7 +84,7 @@ function runTest(useMic){
   var chordScoreEl = document.getElementById("chordScore");
   // --
   var currentBestChord      = null;
-  var bestChordDBThresh     = 10.0;
+  var bestChordDBThresh     =  8.0;
   var bestChordScoreThresh  = 0.70; // note that lower is better here.
   var disallowSusChords     = false;
 
